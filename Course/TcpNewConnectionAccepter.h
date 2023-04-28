@@ -9,4 +9,5 @@ private:
 public:
   TcpNewConnectionAccepter(TcpServerController *tcp_ctrl);
   ~TcpNewConnectionAccepter();
+  void StartTcpNewConnectionAccepterThread();
 };

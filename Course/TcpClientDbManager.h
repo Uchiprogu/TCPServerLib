@@ -12,4 +12,5 @@ public:
   TcpServerController *tcp_ctrl;
   TcpClientDbManager(TcpServerController *tcp_ctrl);
   ~TcpClientDbManager();
+  void StartTcpClientDbManagerInit();
 };

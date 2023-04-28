@@ -1,10 +1,11 @@
 #pragma once
 
+#include <stdint.h>
+#include <string>
+
 #include "TcpClientDbManager.h"
 #include "TcpClientServiceManager.h"
 #include "TcpNewConnectionAccepter.h"
-#include <stdint.h>
-#include <string>
 
 class TcpServerController {
 private:
@@ -17,7 +18,7 @@ public:
   uint16_t port_no;
   std::string name;
 
-  TcpServerController(uint32_t ip, uint16_t port, std::string name);
+  TcpServerController(std::string ip, uint16_t port, std::string name);
   ~TcpServerController();
   void start();
   void stop();

@@ -11,4 +11,5 @@ public:
 
   TcpClientServiceManager(TcpServerController *tcp_ctrl);
   ~TcpClientServiceManager();
+  void StartTcpClientServiceManagerThread();
 };
