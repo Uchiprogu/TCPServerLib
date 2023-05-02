@@ -1,6 +1,7 @@
 
 
 #include "TcpNewConnectionAccepter.h"
+#include "TcpClient.h"
 #include "TcpServerController.h"
 #include "network_utils.h"
 
@@ -82,6 +83,17 @@ void TcpNewConnectionAccepter::StartTcpNewConnectionAccepterThreadInternal() {
       printf("%s() Error in accepting new connection = %d\n", __func__, errno);
       continue;
     }
+
+    TcpClient *tcp_client =
+        new TcpClient(client_addr.sin_addr.s_addr, client_addr.sin_port);
+    tcp_client->comm_fd = this->accept_fd;
+    tcp_client->tcp_ctrl = this->tcp_ctrl;
+
+    /*
+      Tell the TCP Controller  to further process the Client.
+    */
+    this->tcp_ctrl->ProcessNewClient(tcp_client);
+
     printf("Connection Accepted from Client [%s, %d]\n",
            network_convert_ip_n_to_p(client_addr.sin_addr.s_addr, nullptr),
            client_addr.sin_port);

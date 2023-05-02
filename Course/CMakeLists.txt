@@ -7,5 +7,5 @@ project(testapp)
 
 add_library(network_utils network_utils.cpp)
 
-add_executable(testapp testapp.cpp TcpClientDbManager.cpp TcpClientServiceManager.cpp TcpNewConnectionAccepter.cpp TcpServerController.cpp)
+add_executable(testapp testapp.cpp TcpClientDbManager.cpp TcpClientServiceManager.cpp TcpNewConnectionAccepter.cpp TcpServerController.cpp TcpClient.cpp)
 target_link_libraries(testapp network_utils)

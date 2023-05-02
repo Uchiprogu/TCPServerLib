@@ -1,5 +1,6 @@
 
 #include "TcpServerController.h"
+#include "TcpClient.h"
 #include "network_utils.h"
 
 TcpServerController::TcpServerController(std::string ip, uint16_t port,
@@ -33,3 +34,8 @@ void TcpServerController::start() {
 }
 
 void TcpServerController::stop() {}
+
+void TcpServerController::ProcessNewClient(TcpClient *tcp_client) {
+  this->tcp_client_db_mng->AddClient(tcp_client);
+  this->tcp_client_ser_mng->ClientFDStartListen(tcp_client);
+}

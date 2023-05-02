@@ -7,6 +7,7 @@
 #include "TcpClientServiceManager.h"
 #include "TcpNewConnectionAccepter.h"
 
+class TcpClient;
 class TcpServerController {
 private:
   TcpNewConnectionAccepter *tcp_new_con_acc;
@@ -22,4 +23,5 @@ public:
   ~TcpServerController();
   void start();
   void stop();
+  void ProcessNewClient(TcpClient *tcp_client);
 };

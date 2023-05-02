@@ -6,6 +6,8 @@ TcpClientDbManager::TcpClientDbManager(TcpServerController *tcp_ctrl) {
 
 TcpClientDbManager::~TcpClientDbManager() {}
 
-void TcpClientDbManager::StartTcpClientDbManagerInit(){
+void TcpClientDbManager::StartTcpClientDbManagerInit() {}
 
+void TcpClientDbManager::AddClient(TcpClient *client) {
+  this->tcp_clietn_db.push_back(client);
 }
