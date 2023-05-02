@@ -7,7 +7,7 @@ project(tcp_client)
 
 add_library(network_utils ../network_utils.cpp)
 add_executable(tcp_client tcp_client.cpp)
-add_executable(test_2 tcp_client_2.cpp)
+#add_executable(test_2 tcp_client_2.cpp)
 target_link_libraries(tcp_client network_utils)
-target_link_libraries(test_2 network_utils)
+#target_link_libraries(test_2 network_utils)
 

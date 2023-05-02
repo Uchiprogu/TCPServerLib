@@ -4,7 +4,7 @@
 
 TcpServerController::TcpServerController(std::string ip, uint16_t port,
                                          std::string name) {
-  this->ip_addr = network_convert_ip_p_to_n(ip.c_str());
+  this->ip_addr = htonl(network_convert_ip_p_to_n(ip.c_str()));
   this->name = name;
   this->port_no = port;
 
