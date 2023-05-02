@@ -23,5 +23,17 @@ public:
   ~TcpServerController();
   void start();
   void stop();
+  void Display();
   void ProcessNewClient(TcpClient *tcp_client);
+  void (*client_connected)(const TcpServerController *, const TcpClient *);
+  void (*client_disconnected)(const TcpServerController *, const TcpClient *);
+  void (*client_msg_recived)(const TcpServerController *, const TcpClient *,
+                             unsigned char *, uint16_t);
+
+  void SetServerNotifCallbaks(
+      void (*client_connected)(const TcpServerController *, const TcpClient *),
+      void (*client_disconnected)(const TcpServerController *,
+                                  const TcpClient *),
+      void (*client_msg_recived)(const TcpServerController *, const TcpClient *,
+                                 unsigned char *, uint16_t));
 };

@@ -1,7 +1,7 @@
 #pragma once
 
 class TcpServerController;
-class TepClient;
+class TcpClient;
 
 class TcpClientServiceManager {
 private:
@@ -12,4 +12,5 @@ public:
   TcpClientServiceManager(TcpServerController *tcp_ctrl);
   ~TcpClientServiceManager();
   void StartTcpClientServiceManagerThread();
+  void ClientFDStartListen(TcpClient *tcp_client);
 };

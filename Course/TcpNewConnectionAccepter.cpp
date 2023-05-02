@@ -89,6 +89,9 @@ void TcpNewConnectionAccepter::StartTcpNewConnectionAccepterThreadInternal() {
     tcp_client->comm_fd = this->accept_fd;
     tcp_client->tcp_ctrl = this->tcp_ctrl;
 
+    if (this->tcp_ctrl->client_connected)
+      this->tcp_ctrl->client_connected(tcp_ctrl, tcp_client);
+
     /*
       Tell the TCP Controller  to further process the Client.
     */

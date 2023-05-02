@@ -7,6 +7,6 @@ TcpClientServiceManager::TcpClientServiceManager(
 
 TcpClientServiceManager::~TcpClientServiceManager() {}
 
-void TcpClientServiceManager::StartTcpClientServiceManagerThread(){
+void TcpClientServiceManager::StartTcpClientServiceManagerThread() {}
 
-}
+void TcpClientServiceManager::ClientFDStartListen(TcpClient *tcp_client) {}

@@ -14,4 +14,5 @@ public:
   ~TcpClientDbManager();
   void StartTcpClientDbManagerInit();
   void AddClient(TcpClient *client);
+  void DisplayClientDB();
 };

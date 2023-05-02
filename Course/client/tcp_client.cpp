@@ -40,6 +40,7 @@ int main(int argc, char **argv) {
     	printf("Error: connection failed, error no %d\n", if_connected);
     	exit(0);
     }
+    scanf("\n");
 
     return 0;
 }

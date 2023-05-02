@@ -39,3 +39,22 @@ void TcpServerController::ProcessNewClient(TcpClient *tcp_client) {
   this->tcp_client_db_mng->AddClient(tcp_client);
   this->tcp_client_ser_mng->ClientFDStartListen(tcp_client);
 }
+
+void TcpServerController::SetServerNotifCallbaks(
+    void (*client_connected)(const TcpServerController *, const TcpClient *),
+    void (*client_disconnected)(const TcpServerController *, const TcpClient *),
+    void (*client_msg_recived)(const TcpServerController *, const TcpClient *,
+                               unsigned char *, uint16_t)) {
+  this->client_connected = client_connected;
+  this->client_disconnected = client_disconnected;
+  this->client_msg_recived = client_msg_recived;
+}
+
+void TcpServerController::Display() {
+  printf("Server name: %s\n", this->name.c_str());
+  printf("Listenning on: [%s, %d]\n",
+         network_convert_ip_n_to_p(ntohl(this->ip_addr), nullptr),
+         this->port_no);
+
+  this->tcp_client_db_mng->DisplayClientDB();
+}

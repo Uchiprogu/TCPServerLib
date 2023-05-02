@@ -13,4 +13,6 @@ public:
   TcpServerController *tcp_ctrl;
   TcpClient(uint32_t ip_addr, uint16_t port_no);
   ~TcpClient();
+
+  void Display();
 };
