@@ -32,6 +32,7 @@ static void *tcp_listen_for_new_connections(void *arg) {
   TcpNewConnectionAccepter *tcp_new_conn_ac =
       reinterpret_cast<TcpNewConnectionAccepter *>(arg);
   tcp_new_conn_ac->StartTcpNewConnectionAccepterThreadInternal();
+  return nullptr;
 }
 
 void TcpNewConnectionAccepter::StartTcpNewConnectionAccepterThreadInternal() {
