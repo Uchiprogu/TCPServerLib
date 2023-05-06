@@ -9,7 +9,7 @@ TcpNewConnectionAccepter::TcpNewConnectionAccepter(
     TcpServerController *tcp_ctrl) {
 
   this->accept_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-  // setsockopt();
+
   if (accept_fd < 0) {
     printf("Error: Could not create Acceoted FD\n");
     std::exit(0);

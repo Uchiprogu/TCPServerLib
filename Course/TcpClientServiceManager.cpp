@@ -28,6 +28,9 @@ TcpClientServiceManager::~TcpClientServiceManager() {}
 void *tcp_client_scv_manager_thread_fd(void *arg) {
   TcpClientServiceManager *svc_mngr =
       reinterpret_cast<TcpClientServiceManager *>(arg);
+
+  pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, nullptr);
+  pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, nullptr);
   svc_mngr->StartTcpClientServiceManagerThreadInternal();
   return nullptr;
 }
@@ -39,6 +42,13 @@ void TcpClientServiceManager::StartTcpClientServiceManagerThread() {
                  tcp_client_scv_manager_thread_fd, (void *)this);
 }
 
+void TcpClientServiceManager::StopTcpClientServiceManagerThread() {
+  pthread_cancel(*this->client_svc_mng_thread);
+  pthread_join(*this->client_svc_mng_thread, nullptr);
+  free(this->client_svc_mng_thread);
+  this->client_svc_mng_thread = nullptr;
+}
+
 void TcpClientServiceManager::StartTcpClientServiceManagerThreadInternal() {
   /* Invoke select sys calls on all Clients present in Client DB*/
 
@@ -47,6 +57,11 @@ void TcpClientServiceManager::StartTcpClientServiceManagerThreadInternal() {
   std::list<TcpClient *>::iterator it;
   struct sockaddr_in client_addr;
   socklen_t addr_len = sizeof(client_addr);
+  // GetMaxFd();
+  printf("INFO: max_fd = %d\n", this->max_fd);
+  FD_ZERO(&this->backup_fd_set);
+  this->CopyClientFDtoFDSet(&this->backup_fd_set);
+
   while (true) {
     memcpy(&this->active_fd_set, &this->backup_fd_set, sizeof(fd_set));
     select(this->max_fd + 1, &this->active_fd_set, 0, 0, 0);
@@ -74,10 +89,11 @@ void TcpClientServiceManager::StartTcpClientServiceManagerThreadInternal() {
 void TcpClientServiceManager::ClientFDStartListen(TcpClient *tcp_client) {}
 
 int TcpClientServiceManager::GetMaxFd() {
-  // for(auto it : this->tcp_clietn_db){
-  //   if(it->comm_fd > this->max_fd)
-  //     this->max_fd = it->comm_fd;
-  // }
+  printf("INFO: GetMaxFd(): %d\n", this->max_fd);
+  for (auto it : this->tcp_clietn_db) {
+    if (it->comm_fd > this->max_fd)
+      this->max_fd = it->comm_fd;
+  }
   return this->max_fd;
 }
 

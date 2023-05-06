@@ -19,6 +19,7 @@ public:
   TcpClientServiceManager(TcpServerController *tcp_ctrl);
   ~TcpClientServiceManager();
   void StartTcpClientServiceManagerThread();
+  void StopTcpClientServiceManagerThread();
   void ClientFDStartListen(TcpClient *tcp_client);
   void StartTcpClientServiceManagerThreadInternal();
   int GetMaxFd();
