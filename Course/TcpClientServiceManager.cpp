@@ -86,7 +86,15 @@ void TcpClientServiceManager::StartTcpClientServiceManagerThreadInternal() {
   }
 }
 
-void TcpClientServiceManager::ClientFDStartListen(TcpClient *tcp_client) {}
+void TcpClientServiceManager::ClientFDStartListen(TcpClient *tcp_client) {
+  this->StopTcpClientServiceManagerThread();
+  printf("Client Svc Mgr thread is cancelled\n");
+
+  this->AddClientToDB(tcp_client);
+
+  this->client_svc_mng_thread = (pthread_t *)calloc(1, sizeof(pthread_t));
+  this->StartTcpClientServiceManagerThread();
+}
 
 int TcpClientServiceManager::GetMaxFd() {
   printf("INFO: GetMaxFd(): %d\n", this->max_fd);
