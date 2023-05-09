@@ -1,12 +1,13 @@
 #pragma once
 #include <list>
+#include <map>
 
 class TcpClient;
 class TcpServerController;
 
 class TcpClientDbManager {
 private:
-  std::list<TcpClient *> tcp_clietn_db;
+  std::map<int, std::list<TcpClient *>> tcp_clietn_db;
 
 public:
   TcpServerController *tcp_ctrl;

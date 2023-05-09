@@ -1,3 +1,4 @@
+
 #include "TcpClientDbManager.h"
 #include "TcpClient.h"
 
@@ -10,11 +11,14 @@ TcpClientDbManager::~TcpClientDbManager() {}
 void TcpClientDbManager::StartTcpClientDbManagerInit() {}
 
 void TcpClientDbManager::AddClient(TcpClient *client) {
-  this->tcp_clietn_db.push_back(client);
+  if (client == nullptr)
+    return;
+  auto &it_list = this->tcp_clietn_db[client->comm_fd];
+  it_list.push_back(client);
 }
 
 void TcpClientDbManager::DisplayClientDB() {
   for (auto it : this->tcp_clietn_db) {
-    it->Display();
+    // it->Display();
   }
 }

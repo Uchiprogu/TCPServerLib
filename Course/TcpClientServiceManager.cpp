@@ -1,11 +1,14 @@
 #include <cstdlib>
 #include <list>
+#include <map>
 #include <netinet/in.h>
+#include <poll.h>
 #include <pthread.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <sys/select.h>
 #include <sys/socket.h>
+#include <vector>
 
 #include "TcpClient.h"
 #include "TcpClientServiceManager.h"
@@ -17,9 +20,7 @@ unsigned char client_recv_buff[TCP_CLIENT_REVC_BUFFER_SIZE];
 TcpClientServiceManager::TcpClientServiceManager(
     TcpServerController *tcp_ctrl) {
   this->tcp_ctrl = tcp_ctrl;
-  this->max_fd = 0;
-  FD_ZERO(&this->active_fd_set);
-  FD_ZERO(&this->backup_fd_set);
+
   client_svc_mng_thread = (pthread_t *)std::calloc(1, sizeof(pthread_t));
 }
 
@@ -57,32 +58,48 @@ void TcpClientServiceManager::StartTcpClientServiceManagerThreadInternal() {
   std::list<TcpClient *>::iterator it;
   struct sockaddr_in client_addr;
   socklen_t addr_len = sizeof(client_addr);
-  // GetMaxFd();
-  printf("INFO: max_fd = %d\n", this->max_fd);
-  FD_ZERO(&this->backup_fd_set);
-  this->CopyClientFDtoFDSet(&this->backup_fd_set);
 
   while (true) {
-    memcpy(&this->active_fd_set, &this->backup_fd_set, sizeof(fd_set));
-    select(this->max_fd + 1, &this->active_fd_set, 0, 0, 0);
+    // printf("------------ start poll \n");
+    int num_ready =
+        poll(this->pollfields_db.data(), this->pollfields_db.size(), 1000);
+    if (num_ready < 0) {
+      printf("ERROR: not ready field descriptors for poll\n");
+    }
+    // printf("------------ end poll \n");
 
-    for (it = this->tcp_clietn_db.begin(), tcp_client = *it;
-         it != this->tcp_clietn_db.end(); tcp_client = next_tcp_client) {
-
-      next_tcp_client = *(++it);
-
-      if (FD_ISSET(tcp_client->comm_fd, &this->active_fd_set)) {
-        // read data from FD
-        rev_bytes = recvfrom(
-            tcp_client->comm_fd, client_recv_buff, TCP_CLIENT_REVC_BUFFER_SIZE,
-            0, reinterpret_cast<sockaddr *>(&client_addr), &addr_len);
-
-        if (this->tcp_ctrl->client_msg_recived) {
-          this->tcp_ctrl->client_msg_recived(this->tcp_ctrl, tcp_client,
-                                             client_recv_buff, rev_bytes);
-        }
+    for (int i = 0; i < this->pollfields_db.size(); i++) {
+      printf("i: %d fd: %d events: %d revents: %d \n", i,
+             this->pollfields_db[i].fd, this->pollfields_db[i].events,
+             this->pollfields_db[i].revents);
+      if (this->pollfields_db[i].revents & POLLIN) {
+        printf("INFO: handle input event on this file descriptor\n");
+      }
+      if (this->pollfields_db[i].revents & POLLOUT) {
+        printf("INFO: handle output event on this file descriptor\n");
+      }
+      if (this->pollfields_db[i].revents & (POLLERR | POLLHUP | POLLNVAL)) {
+        printf("INFO: handle errors event on this file descriptor\n");
       }
     }
+    // for (it = this->tcp_clietn_db.begin(), tcp_client = *it;
+    //      it != this->tcp_clietn_db.end(); tcp_client = next_tcp_client) {
+
+    //   next_tcp_client = *(++it);
+
+    //   if (FD_ISSET(tcp_client->comm_fd, &this->active_fd_set)) {
+    //     // read data from FD
+    //     rev_bytes = recvfrom(
+    //         tcp_client->comm_fd, client_recv_buff,
+    //         TCP_CLIENT_REVC_BUFFER_SIZE, 0, reinterpret_cast<sockaddr
+    //         *>(&client_addr), &addr_len);
+
+    //     if (this->tcp_ctrl->client_msg_recived) {
+    //       this->tcp_ctrl->client_msg_recived(this->tcp_ctrl, tcp_client,
+    //                                          client_recv_buff, rev_bytes);
+    //     }
+    //   }
+    // }
   }
 }
 
@@ -96,30 +113,25 @@ void TcpClientServiceManager::ClientFDStartListen(TcpClient *tcp_client) {
   this->StartTcpClientServiceManagerThread();
 }
 
-int TcpClientServiceManager::GetMaxFd() {
-  printf("INFO: GetMaxFd(): %d\n", this->max_fd);
-  for (auto it : this->tcp_clietn_db) {
-    if (it->comm_fd > this->max_fd)
-      this->max_fd = it->comm_fd;
-  }
-  return this->max_fd;
-}
-
-void TcpClientServiceManager::CopyClientFDtoFDSet(fd_set *fdset) {
-  if (fdset == nullptr)
-    return;
-  for (auto &it : this->tcp_clietn_db) {
-    FD_SET(it->comm_fd, fdset);
+void TcpClientServiceManager::SetPollEventForFd(int fd, short event) {
+  for (auto &it : this->pollfields_db) {
+    if (it.fd = fd) {
+      it.events = event;
+      break;
+    }
   }
 }
 
 TcpClient *TcpClientServiceManager::LookUpClientDB(uint32_t ip_addr,
                                                    uint16_t port_no) {
   TcpClient *tcp_client = nullptr;
-  for (auto &it : this->tcp_clietn_db) {
-    if (it->ip_addr == ip_addr && it->port_no == port_no) {
-      tcp_client = it;
-      break;
+  for (auto it = this->tcp_clietn_db.begin(); it != this->tcp_clietn_db.end();
+       ++it) {
+    for (auto &list_it : it->second) {
+      if (list_it->ip_addr == ip_addr && list_it->port_no == port_no) {
+        tcp_client = list_it;
+        break;
+      }
     }
   }
 
@@ -129,8 +141,11 @@ TcpClient *TcpClientServiceManager::LookUpClientDB(uint32_t ip_addr,
 void TcpClientServiceManager::AddClientToDB(TcpClient *tcp_client) {
   if (tcp_client == nullptr)
     return;
-  if (this->max_fd < tcp_client->comm_fd) {
-    this->max_fd = tcp_client->comm_fd;
+  if (this->tcp_clietn_db.find(tcp_client->comm_fd) ==
+      this->tcp_clietn_db.end()) {
+    pollfd newfd = {tcp_client->comm_fd, POLLIN, 0};
+    this->pollfields_db.push_back(newfd);
   }
-  this->tcp_clietn_db.push_front(tcp_client);
+  auto &it_list = this->tcp_clietn_db[tcp_client->comm_fd];
+  it_list.push_back(tcp_client);
 }
